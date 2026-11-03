@@ -6,9 +6,22 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+/**
+ * Включать ли GGUF-модель (≈1.1 ГБ) внутрь APK.
+ *
+ * По умолчанию модель НЕ пакуется в APK: приложение читает GGUF-файл,
+ * который пользователь выбирает на устройстве (SAF / OpenDocument) или
+ * который лежит в приватной папке приложения. Это даёт APK ~30 МБ вместо ~1.1 ГБ.
+ *
+ * Собрать «всё-в-одном» APK с моделью:
+ *   ./gradlew :app:assembleDebug -PbundleModel=true
+ */
+val bundleModel: Boolean =
+    providers.gradleProperty("bundleModel").orNull?.toBooleanStrictOrNull() ?: false
+
 android {
     namespace = "com.example.financeplanner"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.financeplanner"
@@ -29,15 +42,34 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlin {
         jvmToolchain(17)
     }
+
     buildFeatures {
         compose = true
+    }
+
+    androidResources {
+        // GGUF — это уже сжатый формат: deflate только замедляет сборку и установку.
+        noCompress += "gguf"
+        noCompress += "bin"
+    }
+
+}
+
+androidComponents {
+    onVariants { variant ->
+        if (bundleModel) {
+            // model-assets/models/<файл>.gguf -> assets/models/<файл>.gguf внутри APK
+            variant.sources.assets?.addStaticSourceDirectory("model-assets")
+        }
     }
 }
 
@@ -64,9 +96,12 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:4.0.0")
 
     // --- Room ---
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
+
+    // --- Jetpack DataStore (настройки AI/голоса, URI модели) ---
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // --- Retrofit + OkHttp ---
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
@@ -76,6 +111,9 @@ dependencies {
 
     // --- kotlinx.serialization ---
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // --- Локальная GGUF-модель для лабораторной №5 (On-Device AI) ---
+    implementation("io.github.ljcamargo:llamacpp-kotlin:0.2.0")
 
     // --- Coroutines ---
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")

@@ -2,11 +2,13 @@ package com.example.financeplanner.data.repository
 
 import android.content.Context
 import com.example.financeplanner.data.remote.dto.MccCodeDto
+import com.example.financeplanner.domain.model.MccProvider
 import kotlinx.serialization.json.Json
 
 class MccRepository(
     private val context: Context
-) {
+) : MccProvider {
+
     private val json = Json { ignoreUnknownKeys = true }
 
     // Кэш: загружаем один раз, держим в памяти
@@ -33,14 +35,14 @@ class MccRepository(
      * Возвращает название категории по MCC-коду.
      * Если код не найден — возвращает "Неизвестно".
      */
-    fun getCategoryName(mccCode: String): String {
+    override fun getCategoryName(mccCode: String): String {
         return getMccCodes()[mccCode]?.name ?: "Неизвестно"
     }
 
     /**
      * Возвращает иконку (эмодзи) по MCC-коду.
      */
-    fun getIcon(mccCode: String): String {
+    override fun getIcon(mccCode: String): String {
         return getMccCodes()[mccCode]?.icon ?: "❓"
     }
 }

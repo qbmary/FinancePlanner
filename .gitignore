@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# --- модель Qwen (≈1.1 ГБ): распространяется отдельным файлом, в git не кладём ---
+app/model-assets/models/*.gguf
+*.gguf
+
+# --- собранные APK ---
+/dist/*.apk

@@ -121,7 +121,7 @@ fun TransactionDetailScreen(
                 )
 
                 // Краткая дата
-                val shortFormat = SimpleDateFormat("dd MMM, HH:mm", Locale("ru"))
+                val shortFormat = SimpleDateFormat("dd MMM, HH:mm", Locale.forLanguageTag("ru"))
                 Text(
                     text = shortFormat.format(Date(transaction.date)),
                     color = Color.White.copy(alpha = 0.6f),

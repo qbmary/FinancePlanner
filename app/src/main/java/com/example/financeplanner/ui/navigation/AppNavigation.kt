@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Icon
@@ -30,11 +31,13 @@ import androidx.navigation.navArgument
 import com.example.financeplanner.ui.screens.detail.TransactionDetailScreen
 import com.example.financeplanner.ui.screens.home.HomeScreen
 import com.example.financeplanner.ui.screens.payments.PaymentsScreen
+import com.example.financeplanner.ui.screens.assistant.AssistantScreen
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object History : Screen("history")
     object Payments : Screen("payments")
+    object Assistant : Screen("assistant")
     object Detail : Screen("detail/{transactionId}") {
         fun createRoute(id: Long) = "detail/$id"
     }
@@ -49,7 +52,8 @@ fun AppNavigation() {
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
         Screen.History.route,
-        Screen.Payments.route
+        Screen.Payments.route,
+        Screen.Assistant.route
     )
 
     Box(
@@ -124,6 +128,23 @@ fun AppNavigation() {
                                 unselectedTextColor = Color.White.copy(alpha = 0.5f)
                             )
                         )
+                        NavigationBarItem(
+                            selected = currentRoute == Screen.Assistant.route,
+                            onClick = {
+                                navController.navigate(Screen.Assistant.route) {
+                                    popUpTo(Screen.Home.route)
+                                    launchSingleTop = true
+                                }
+                            },
+                            icon = { Icon(Icons.Default.Face, contentDescription = "Ассистент") },
+                            label = { Text("Ассистент") },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                selectedTextColor = Color.White,
+                                unselectedIconColor = Color.White.copy(alpha = 0.5f),
+                                unselectedTextColor = Color.White.copy(alpha = 0.5f)
+                            )
+                        )
                     }
                 }
             }
@@ -156,6 +177,9 @@ fun AppNavigation() {
                 }
                 composable(Screen.Payments.route) {
                     PaymentsScreen()
+                }
+                composable(Screen.Assistant.route) {
+                    AssistantScreen()
                 }
                 composable(
                     route = Screen.Detail.route,
